@@ -1,0 +1,27 @@
+texte      := phrase fin_phrase | phrase fin_phrase texte;
+
+phrase     := expression fin_expression 
+           |  expression 
+           |  expression fin_expression phrase ;
+
+expression := groupe action groupe action groupe 
+           |  groupe ;
+
+groupe      := groupe_mot | groupe_mot id ;
+
+groupe_mot := noeud_vide |
+              noeud_mot |
+              left_par noeud_mot right_par |
+              left_par noeud_mot liaison_groupe_mot right_par ;
+            
+liaison_groupe_mot := liaison noeud_mot | liaison noeud_mot liaison_groupe_mot ;
+
+link_mot   := liaison | appartient ;
+
+noeud_mot  := deco_mot mot deco_mot | mot | ref ;
+
+noeud_vide := left_par right_par ;
+
+deco_mot   := deco_plusieurs | deco_fort ;
+
+action     := present_gauche | present_droit | passe_gauche | passe_droit | futur_gauche | futur_droit ;

@@ -1,0 +1,9 @@
+texte := phrase fin_phrase;
+
+phrase := expression | expression fin_expression phrase;
+
+expression := groupe_mot | groupe_mot link_mot groupe_mot;
+
+groupe_mot := mot;
+
+link_mot   := liaison | appartient ;
