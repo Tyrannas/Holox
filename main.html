@@ -77,6 +77,7 @@
                 var input = document.getElementById('userInput').value
                 var tokens = scan(tokenizer, input)//.map(el => el.type)
                 parseTokens(tokens, "texte", simple_chart_config.nodeStructure, grammar)
+                console.log("number of operations done: " + all_trees.length)
                 // removeUselessBranches(simple_chart_config.nodeStructure)
                 last()
             }
