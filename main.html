@@ -75,12 +75,15 @@
                 var tokens = scan(tokenizer, input)//.map(el => el.type)
                 console.log("TOKENS: \n", tokens)
                 parseTokens(tokens, "texte", simple_chart_config.nodeStructure, grammar)
-                removeUselessBranches(simple_chart_config.nodeStructure)
+                // removeUselessBranches(simple_chart_config.nodeStructure)
                 last()
             }
         
         function drawTree(){
-            // simple_chart_config.nodeStructure = JSON.parse(all_trees[current_tree]);
+            simple_chart_config.nodeStructure = JSON.parse(all_trees[current_tree]);
+            if(current_tree == all_trees.length -1) {
+                removeUselessBranches(simple_chart_config.nodeStructure)
+            }
             setLeafGreen(simple_chart_config.nodeStructure)
             new Treant(simple_chart_config)
         }
