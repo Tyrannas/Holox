@@ -28,11 +28,12 @@ function scan(tokenizer, inputStream){
 
 function buildTokenizer(lexerRules){
     // take an input in the form:
-    // tokenName := regExp \r\n
+    // tokenName := regExp ;
     tokenizer = {}
-    lexems = lexerRules.split('\r\n')
+    lexems = lexerRules.split(';')
+    if(lexems[lexems.length - 1] === '') lexems.pop()
     lexems.forEach(l => { 
-        let parsed = l.trim().split(':=')
+        let parsed = l.split(':=')
         regex = "^" + parsed[1].trim()
         tokenizer[parsed[0].trim()] = new RegExp(regex)
     })
