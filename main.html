@@ -77,8 +77,10 @@
         async function parseInput(){
             var input = document.getElementById('userInput').value
             var tokens = scan(tokenizer, input)//.map(el => el.type)
+                let t1 = new Date().getTime()
                 parseTokens(tokens, "texte", simple_chart_config.nodeStructure, grammar)
                 console.log("number of operations done: " + all_trees.length)
+                console.log("computed in " +( new Date().getTime() - t1) / 1000 + "s")
                 // removeUselessBranches(simple_chart_config.nodeStructure)
                 last()
             }

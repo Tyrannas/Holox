@@ -78,6 +78,7 @@ function parseTokens(tokens, symbols, tree, grammar) {
         // pour chacun des symboles on relance la récursion
         for(let symbol of symbols){
             if(terminals.includes(symbol) && !tokens.map(e => e.type).includes(symbol)){
+                // probablement inutile comme on a pas encore lancé la récursion
                 resetChildren(node)
                 return 0
             }
