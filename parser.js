@@ -76,8 +76,14 @@ function parseTokens(tokens, symbols, tree, grammar) {
     if (Array.isArray(symbols)) {
         var total = 0
         // pour chacun des symboles on relance la récursion
+        for(let symbol of symbols){
+            if(terminals.includes(symbol) && !tokens.map(e => e.type).includes(symbol)){
+                resetChildren(node)
+                return 0
+            }
+        }
         for (var i = 0; i < symbols.length; i++) {
-            // on récupère le score de la branche, chaque fois qu'un terminal est matché on le consomme 
+            // on récupère le score de la branche, chaque fois qu'un terminal est matché on le consomme
             var count = parseTokens(tokens.slice(total), symbols[i], node, grammar)
             // si la branche ne match pas de token on reset les children et on coupe la boucle + la branche
             if(count == 0) {

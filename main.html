@@ -73,37 +73,38 @@
         var all_trees = []
         var current_tree = 0
         var playing = false
+        var terminals = []
         async function parseInput(){
-                var input = document.getElementById('userInput').value
-                var tokens = scan(tokenizer, input)//.map(el => el.type)
+            var input = document.getElementById('userInput').value
+            var tokens = scan(tokenizer, input)//.map(el => el.type)
                 parseTokens(tokens, "texte", simple_chart_config.nodeStructure, grammar)
                 console.log("number of operations done: " + all_trees.length)
                 // removeUselessBranches(simple_chart_config.nodeStructure)
                 last()
             }
         
-        function drawTree(){
-            simple_chart_config.nodeStructure = JSON.parse(all_trees[current_tree]);
-            if(current_tree == all_trees.length -1) {
-                removeUselessBranches(simple_chart_config.nodeStructure)
+            function drawTree(){
+                simple_chart_config.nodeStructure = JSON.parse(all_trees[current_tree]);
+                if(current_tree == all_trees.length -1) {
+                    removeUselessBranches(simple_chart_config.nodeStructure)
+                }
+                setLeafGreen(simple_chart_config.nodeStructure)
+                new Treant(simple_chart_config)
             }
-            setLeafGreen(simple_chart_config.nodeStructure)
-            new Treant(simple_chart_config)
-        }
-        function first(){
-            current_tree = 0;
-            drawTree()
-        }
-        function last(){
-            current_tree = all_trees.length - 1;
-            drawTree()
-        }
-        async function play(){
-            playing = true
-            while(current_tree < all_trees.length && playing){
+            function first(){
+                current_tree = 0;
                 drawTree()
-                current_tree++
-                await sleep(DISPLAY_SPEED)
+            }
+            function last(){
+                current_tree = all_trees.length - 1;
+                drawTree()
+            }
+            async function play(){
+                playing = true
+                while(current_tree < all_trees.length && playing){
+                    drawTree()
+                    current_tree++
+                    await sleep(DISPLAY_SPEED)
             }
         }
         function pause(){
@@ -130,9 +131,9 @@
             
             var tokenizer = buildTokenizer(lexerRules);
             var grammar = buildGrammar(grammarRules);
-
+            terminals = Object.keys(tokenizer)
         })();
-
-    </script>
+        
+        </script>
 </body>
 </html>
