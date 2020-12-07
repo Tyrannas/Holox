@@ -55,10 +55,11 @@
                 let copy = {...simple_chart_config}
                 for(let tree of all_trees){
                     copy.nodeStructure = JSON.parse(tree);
-                    setLeafGreen(copy.nodeStructure)
                     new Treant(copy)
-                    await sleep(350)
+                    await sleep(300)
                 }
+                setLeafGreen(simple_chart_config.nodeStructure)
+                new Treant(simple_chart_config)
             }
 
         (async function () {
