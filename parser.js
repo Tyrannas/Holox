@@ -37,7 +37,6 @@ function parseTokens(tokens, symbols, tree, grammar) {
     // condition d'arrêt, on a trouvé une feuille de l'arbre
     // on renvoie 1
     if (tokens[0].type == symbols){
-        console.log("on a trouvé un symbole terminal correspondant!! " + symbols)
         node.text.data = tokens[0].value
         setValid(node)
         updateScore(node, 1)
@@ -89,7 +88,6 @@ function parseTokens(tokens, symbols, tree, grammar) {
             total += count
             updateScore(node, total)
         }
-        console.log(symbols, total)
         updateData(node)
         setValid(node)
         updateScore(node, total)
@@ -141,6 +139,10 @@ function resetChildren(node) {
         })
     }
     node.HTMLclass = undefined
+    if(DELETE_USELESS){
+        removeUselessBranches(node)
+        saveTree()
+    }
     updateScore(node, 0)
 }
 
@@ -154,7 +156,6 @@ function resetNonMaxChildren(node) {
     // console.log(node.children.length + ' : children. max score index: ' + index)
     for(let i = 0; i < node.children.length; i++) {
         if(i != index && node.children[i].score > 0) {
-            console.log("reset non max:  " + node.text.name)
             resetChildren(node.children[i])
         }
     }

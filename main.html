@@ -43,6 +43,8 @@
         <div style="margin: auto; width: 60%;">
             <input type=button class="button" onclick="first()" value="<<">
             <input type=button class="button" onclick="previous()" value="<">
+            <input type=button class="button" onclick="play()" value="Play">
+            <input type=button class="button" onclick="pause()" value="Pause">
             <input type=button class="button" onclick="next()" value=">">
             <input type=button class="button" onclick="last()" value=">>">
         </div>
@@ -70,10 +72,10 @@
         };
         var all_trees = []
         var current_tree = 0
+        var playing = false
         async function parseInput(){
                 var input = document.getElementById('userInput').value
                 var tokens = scan(tokenizer, input)//.map(el => el.type)
-                console.log("TOKENS: \n", tokens)
                 parseTokens(tokens, "texte", simple_chart_config.nodeStructure, grammar)
                 // removeUselessBranches(simple_chart_config.nodeStructure)
                 last()
@@ -94,6 +96,17 @@
         function last(){
             current_tree = all_trees.length - 1;
             drawTree()
+        }
+        async function play(){
+            playing = true
+            while(current_tree < all_trees.length && playing){
+                drawTree()
+                current_tree++
+                await sleep(DISPLAY_SPEED)
+            }
+        }
+        function pause(){
+            playing = false
         }
         function next(){
             if(current_tree < all_trees.length - 1){
@@ -116,9 +129,6 @@
             
             var tokenizer = buildTokenizer(lexerRules);
             var grammar = buildGrammar(grammarRules);
-            
-            console.log(grammar);
-            console.log(tokenizer)
 
         })();
 
