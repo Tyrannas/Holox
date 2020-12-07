@@ -84,12 +84,9 @@ function parseTokens(tokens, symbols, tree, grammar) {
             total += count
             updateScore(node, total)
         }
-        // si le total est > 0 alors on valide le noeud courant
-        // if(total > 0) {
-            console.log(symbols, total)
-            setValid(node)
-            updateScore(node, total)
-        // }
+        console.log(symbols, total)
+        setValid(node)
+        updateScore(node, total)
         return total
     }
     // si on a matché aucun des cas c'est que le token est un symbole terminal 
@@ -103,6 +100,10 @@ function saveTree() {
 }
 
 function updateScore(node, score) {
+    var oldScore = Number(node.text.name.split(':')[1])
+    if(oldScore === score) {
+        return
+    }
     node.text.name = node.text.name.split(':')[0] + ": " + score
     saveTree()
 }
@@ -124,14 +125,17 @@ function setValid(node) {
     node.HTMLclass = "blue"
 }
 
+
 function resetChildren(node) {
-    console.log("ici on reset")
+    if(Array.isArray(node.children)) {
+        node.children.forEach(n => {
+            if(n.HTMLclass !== undefined){
+                resetChildren(n)
+            }
+        })
+    }
+    node.HTMLclass = undefined
     updateScore(node, 0)
-    if (node.children === undefined) return
-    node.children.forEach(n => {
-        n.HTMLclass = undefined
-        resetChildren(n)
-    })
 }
 
 function setLeafGreen(node) {
