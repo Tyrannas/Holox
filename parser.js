@@ -60,6 +60,7 @@ function parseTokens(tokens, symbols, tree, grammar) {
         if(max > 0) {
             setValid(node)
             updateScore(node, max)
+            resetNonMaxChildren(node)
         }
         // sinon on l'abandonne
         else {
@@ -100,10 +101,10 @@ function saveTree() {
 }
 
 function updateScore(node, score) {
-    var oldScore = Number(node.text.name.split(':')[1])
-    if(oldScore === score) {
+    if(node.score === score) {
         return
     }
+    node.score = score
     node.text.name = node.text.name.split(':')[0] + ": " + score
     saveTree()
 }
@@ -136,6 +137,19 @@ function resetChildren(node) {
     }
     node.HTMLclass = undefined
     updateScore(node, 0)
+}
+
+function resetNonMaxChildren(node) {
+    let max = Math.max(...node.children.map(n => n.score))
+    // console.log("max score: " + max)
+    let index = node.children.map(n => n.score).indexOf(max)
+    // console.log(node.children.length + ' : children. max score index: ' + index)
+    for(let i = 0; i < node.children.length; i++) {
+        if(i != index) {
+            // console.log("reset non max")
+            resetChildren(node.children[i])
+        }
+    }
 }
 
 function setLeafGreen(node) {
