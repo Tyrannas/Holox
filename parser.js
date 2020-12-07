@@ -25,6 +25,10 @@ function parseTokens(tokens, symbols, tree, grammar) {
      * 2) on trouve un symbole non terminal -> on relance la récursion sur toutes les règles associées à ce symbole
      * 3) on a une liste de symboles -> on relance la récursion sur chacun de ces symboles
      */
+
+    // si il n'y a pas de tokens on termine
+    if(tokens.length === 0) return 0
+
     var node = addChildren(tree, symbols)
 
     if (Array.isArray(symbols) && symbols.length === 1 ){
@@ -81,11 +85,11 @@ function parseTokens(tokens, symbols, tree, grammar) {
             updateScore(node, total)
         }
         // si le total est > 0 alors on valide le noeud courant
-        if(total > 0) {
+        // if(total > 0) {
             console.log(symbols, total)
             setValid(node)
             updateScore(node, total)
-        }
+        // }
         return total
     }
     // si on a matché aucun des cas c'est que le token est un symbole terminal 
