@@ -36,8 +36,9 @@ function parseTokens(tokens, symbols, tree, grammar) {
     }
     // condition d'arrêt, on a trouvé une feuille de l'arbre
     // on renvoie 1
-    if (tokens[0] == symbols){
+    if (tokens[0].type == symbols){
         console.log("on a trouvé un symbole terminal correspondant!! " + symbols)
+        node.text.data = tokens[0].value
         setValid(node)
         updateScore(node, 1)
         return 1
@@ -58,9 +59,12 @@ function parseTokens(tokens, symbols, tree, grammar) {
         });
         // si on a un resultat on valide la branche
         if(max > 0) {
+            resetNonMaxChildren(node)
+            updateData(node)
             setValid(node)
             updateScore(node, max)
-            resetNonMaxChildren(node)
+            // console.log('reset non max:  ' + node.text.name)
+
         }
         // sinon on l'abandonne
         else {
@@ -86,6 +90,7 @@ function parseTokens(tokens, symbols, tree, grammar) {
             updateScore(node, total)
         }
         console.log(symbols, total)
+        updateData(node)
         setValid(node)
         updateScore(node, total)
         return total
@@ -116,7 +121,7 @@ function addChildren(parent, name) {
     if (Array.isArray(name)) {
         name = name.join(' ')
     }
-    var child = {text:{"name": name + ': 0'}}
+    var child = {text:{"name": name + ': 0', data: ""}}
     parent.children.push(child)
     saveTree()
     return child
@@ -140,13 +145,16 @@ function resetChildren(node) {
 }
 
 function resetNonMaxChildren(node) {
+    if (node.children.length < 2) {
+        return
+    }
     let max = Math.max(...node.children.map(n => n.score))
     // console.log("max score: " + max)
     let index = node.children.map(n => n.score).indexOf(max)
     // console.log(node.children.length + ' : children. max score index: ' + index)
     for(let i = 0; i < node.children.length; i++) {
-        if(i != index) {
-            // console.log("reset non max")
+        if(i != index && node.children[i].score > 0) {
+            console.log("reset non max:  " + node.text.name)
             resetChildren(node.children[i])
         }
     }
@@ -162,4 +170,18 @@ function setLeafGreen(node) {
     else {
         node.HTMLclass = "green"
     }
+}
+
+function removeUselessBranches(node) {
+    if(Array.isArray(node.children)) {
+        node.children = node.children.filter(n => n.HTMLclass !== undefined)
+        node.children.forEach(removeUselessBranches)
+    }
+}
+
+function updateData(node) {
+    if(node.children === undefined) return
+
+    let data = node.children.filter(n => n.HTMLclass !== undefined).map(n => n.text.data).join('')
+    node.text.data = data
 }

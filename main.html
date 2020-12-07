@@ -10,6 +10,14 @@
     border-radius: 5px;
     padding: 3px;
 }
+.node-data {
+    text-align: center;
+    color: #a50000
+}
+
+.node-name {
+    text-align: center;
+}
 </style>
 <html lang="en">
 <head>
@@ -64,14 +72,15 @@
         var current_tree = 0
         async function parseInput(){
                 var input = document.getElementById('userInput').value
-                var tokens = scan(tokenizer, input).map(el => el.type)
+                var tokens = scan(tokenizer, input)//.map(el => el.type)
                 console.log("TOKENS: \n", tokens)
                 parseTokens(tokens, "texte", simple_chart_config.nodeStructure, grammar)
+                removeUselessBranches(simple_chart_config.nodeStructure)
                 last()
             }
         
         function drawTree(){
-            simple_chart_config.nodeStructure = JSON.parse(all_trees[current_tree]);
+            // simple_chart_config.nodeStructure = JSON.parse(all_trees[current_tree]);
             setLeafGreen(simple_chart_config.nodeStructure)
             new Treant(simple_chart_config)
         }
