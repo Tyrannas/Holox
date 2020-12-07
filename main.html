@@ -17,11 +17,27 @@
     <title></title>
     <!-- stylesheets -->
     <link rel="stylesheet" href="treant-js-master/Treant.css" type="text/css"/>
+    <style>
+        .button{
+            padding: 0.7em
+        }
+        .button:hover{
+            cursor: pointer
+        }
+    </style>
 </head>
 <body>
     <div style="margin: auto;display: block; width: 40%;">
         <input type="text" id="userInput" style="width: 80%" value="Toto."/>
         <input type=button onclick="parseInput()" value="GO">
+    </div>
+    <div style="margin: auto;display: block; width: 40%; margin-top: 1em;">
+        <div style="margin: auto; width: 60%;">
+            <input type=button class="button" onclick="first()" value="<<">
+            <input type=button class="button" onclick="previous()" value="<">
+            <input type=button class="button" onclick="next()" value=">">
+            <input type=button class="button" onclick="last()" value=">>">
+        </div>
     </div>
     <p id="input" style="text-align: center;"></p>
     <div id="tree-simple"> </div>
@@ -45,23 +61,40 @@
             }
         };
         var all_trees = []
+        var current_tree = 0
         async function parseInput(){
                 var input = document.getElementById('userInput').value
                 var tokens = scan(tokenizer, input).map(el => el.type)
                 console.log("TOKENS: \n", tokens)
                 parseTokens(tokens, "texte", simple_chart_config.nodeStructure, grammar)
-                // setLeafGreen(simple_chart_config.nodeStructure)
-                // new Treant(simple_chart_config)
-                let copy = {...simple_chart_config}
-                for(let tree of all_trees){
-                    copy.nodeStructure = JSON.parse(tree);
-                    new Treant(copy)
-                    await sleep(300)
-                }
-                setLeafGreen(simple_chart_config.nodeStructure)
-                new Treant(simple_chart_config)
+                last()
             }
-
+        
+        function drawTree(){
+            simple_chart_config.nodeStructure = JSON.parse(all_trees[current_tree]);
+            setLeafGreen(simple_chart_config.nodeStructure)
+            new Treant(simple_chart_config)
+        }
+        function first(){
+            current_tree = 0;
+            drawTree()
+        }
+        function last(){
+            current_tree = all_trees.length - 1;
+            drawTree()
+        }
+        function next(){
+            if(current_tree < all_trees.length - 1){
+                current_tree++
+            }
+            drawTree()
+        }
+        function previous(){
+            if(current_tree !== 0){
+                current_tree--
+            }
+            drawTree()
+        }
         (async function () {
             const respGram = await fetch(HOST + "/" + GRAMMAR)
             const grammarRules = await respGram.text()

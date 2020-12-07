@@ -80,12 +80,6 @@ function parseTokens(tokens, symbols, tree, grammar) {
             total += count
             updateScore(node, total)
         }
-        // si le total est > 0 alors on valide le noeud courant
-        if(total > 0) {
-            console.log(symbols, total)
-            setValid(node)
-            updateScore(node, total)
-        }
         return total
     }
     // si on a matché aucun des cas c'est que le token est un symbole terminal 
@@ -121,11 +115,12 @@ function setValid(node) {
 }
 
 function resetChildren(node) {
-    console.log("ici on reset")
-    updateScore(node, 0)
     if (node.children === undefined) return
     node.children.forEach(n => {
-        n.HTMLclass = undefined
+        if(n.HTMLclass !== undefined){
+            n.HTMLclass = undefined
+            updateScore(node, 0)
+        }
         resetChildren(n)
     })
 }
