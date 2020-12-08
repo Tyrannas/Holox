@@ -1,3 +1,21 @@
+var cache = {}
+var USE_CACHE = true;
+
+function hash(cursor, symbols) {
+    if(Array.isArray(symbols)) {
+        symbols = symbols.join(' ')
+    }
+    return "" + cursor + ":" + symbols
+}
+
+function saveToCache(cursor, node) {
+    cache[hash(cursor, node.symbols)] = JSON.stringify(node)
+}
+
+function getFromCache(cursor, symbols) {
+    return cache[hash(cursor, symbols)]
+}
+
 
 function buildGrammar(grammarRules) {
     grammar = {}
@@ -11,10 +29,14 @@ function buildGrammar(grammarRules) {
     return grammar
 }
 
+function parse(tokens, symbols, tree, grammar) {
+    return parseTokens(tokens, 0, symbols, tree, grammar)
+}
 
-function parseTokens(tokens, symbols, tree, grammar) {
+function parseTokens(tokens, cursor, symbols, tree, grammar) {
     /**
      * @tokens: les tokens à parser
+     * @cursor: la place du curseur dans tokens
      * @symbols: les symboles de règle que l'on cherche à évaluer
      * @tree: l'arbre auquel ajouter les nodes
      * @grammar: les règles de grammaire
@@ -26,8 +48,17 @@ function parseTokens(tokens, symbols, tree, grammar) {
      * 3) on a une liste de symboles -> on relance la récursion sur chacun de ces symboles
      */
 
-    // si il n'y a pas de tokens on termine
-    if(tokens.length === 0) return 0
+    // si il n'y a plus de tokens a lire on termine
+    if(cursor >= tokens.length) return 0
+
+    if(USE_CACHE) {
+        let inCache = getFromCache(cursor, symbols)
+        if(inCache !== undefined) {
+            let node = addChildrenFromCache(tree, inCache)
+            // console.log("score from cache: " + node.score)
+            return node.score
+        }
+    }
 
     var node = addChildren(tree, symbols)
 
@@ -36,10 +67,11 @@ function parseTokens(tokens, symbols, tree, grammar) {
     }
     // condition d'arrêt, on a trouvé une feuille de l'arbre
     // on renvoie 1
-    if (tokens[0].type == symbols){
-        node.text.data = tokens[0].value
-        setValid(node)
+    if (tokens[cursor].type == symbols){
+        node.text.data = tokens[cursor].value
+        // setValid(cursor, node)
         updateScore(node, 1)
+        setValid(cursor, node)
         return 1
     }
 
@@ -49,7 +81,7 @@ function parseTokens(tokens, symbols, tree, grammar) {
         // on applique les différentes règles associées à ce symbole
         grammar[symbols].forEach(t => {
             // on récupère le score associé à chaque branche de règle
-            var count = parseTokens(tokens, t, node, grammar)
+            var count = parseTokens(tokens, cursor, t, node, grammar)
             // on prend la branche avec la valeur la plus elevée
             // typiquement la branche la plus elevée sera celle qui aura validé le plus de feuilles
             if (count > max) {
@@ -60,8 +92,9 @@ function parseTokens(tokens, symbols, tree, grammar) {
         if(max > 0) {
             resetNonMaxChildren(node)
             updateData(node)
-            setValid(node)
+            // setValid(cursor, node)
             updateScore(node, max)
+            setValid(cursor, node)
             // console.log('reset non max:  ' + node.text.name)
 
         }
@@ -77,7 +110,7 @@ function parseTokens(tokens, symbols, tree, grammar) {
         var total = 0
         // pour chacun des symboles on relance la récursion
         for(let symbol of symbols){
-            if(terminals.includes(symbol) && !tokens.map(e => e.type).includes(symbol)){
+            if(terminals.includes(symbol) && !tokens.slice(cursor).map(e => e.type).includes(symbol)){
                 // probablement inutile comme on a pas encore lancé la récursion
                 resetChildren(node)
                 return 0
@@ -85,7 +118,7 @@ function parseTokens(tokens, symbols, tree, grammar) {
         }
         for (var i = 0; i < symbols.length; i++) {
             // on récupère le score de la branche, chaque fois qu'un terminal est matché on le consomme
-            var count = parseTokens(tokens.slice(total), symbols[i], node, grammar)
+            var count = parseTokens(tokens, total + cursor, symbols[i], node, grammar)
             // si la branche ne match pas de token on reset les children et on coupe la boucle + la branche
             if(count == 0) {
                 resetChildren(node)
@@ -96,8 +129,9 @@ function parseTokens(tokens, symbols, tree, grammar) {
             updateScore(node, total)
         }
         updateData(node)
-        setValid(node)
+        // setValid(cursor, node)
         updateScore(node, total)
+        setValid(cursor, node)
         return total
     }
     // si on a matché aucun des cas c'est que le token est un symbole terminal 
@@ -126,14 +160,29 @@ function addChildren(parent, name) {
     if (Array.isArray(name)) {
         name = name.join(' ')
     }
-    var child = {text:{"name": name + ': 0', data: ""}}
+    var child = {text:{"name": name + ': 0'}}
+    child.symbols = name
     parent.children.push(child)
     saveTree()
     return child
 }
 
-function setValid(node) {
+function addChildrenFromCache(parent, nodeFromCache) {
+    if (parent.children === undefined) {
+        parent.children = []
+    }
+    let node = JSON.parse(nodeFromCache)
+    parent.children.push(node)
+    saveTree()
+    return node
+}
+
+function setValid(cursor, node) {
     node.HTMLclass = "blue"
+    if(USE_CACHE) {
+        saveToCache(cursor, node)
+    }
+    saveTree()
 }
 
 
