@@ -1,6 +1,6 @@
 ### I. Langage naturel // pas forcément nécessaire parceque cette représentation force aussi à penser un peu différemment donc pas sûr que cette première étape soit pertinente
 
-La solution que tu cherches est le système d'écriture qu'utilisaient les anciens égyptiens et qui a été decrypté par Champolion. 
+La solution que tu cherches assidument est le système d'écriture qu'utilisaient les anciens égyptiens et qui a été decrypté par Champolion. 
 
 ### II. Preprocessing ( Finalement il va falloir commencer depuis là I. vers II. impossible)
 
