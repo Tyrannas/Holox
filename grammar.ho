@@ -4,8 +4,10 @@ phrase     := expression fin_expression
            |  expression 
            |  expression fin_expression phrase ;
 
-expression := groupe action groupe action groupe 
+expression := groupe action verbe action groupe 
            |  groupe ;
+
+verbe      := groupe ;
 
 groupe      := groupe_mot | groupe_mot id ;
 
