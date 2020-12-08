@@ -31,7 +31,7 @@ Ce qu'on veut garder:
  - La notion d'id et de ref, pour qu'ils soient évalués plus tard
  - La notion de verbe, qui relie deux groupes, avec une direction et un temps pour l'action
 
-Pour récupérer tout 
+Pour récupérer tout ça, peut être mettre un caractère spécial dans la grammaire pour indiquer qu'un symbole fait partie de l'AST ou non.
 
 ### V. Transformation en dictionnaire de valeurs 
 
