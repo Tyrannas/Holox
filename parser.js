@@ -150,7 +150,7 @@ function updateScore(node, score) {
     }
     node.score = score
     node.text.name = node.text.name.split(':')[0] + ": " + score
-    // saveTree()
+    saveTree()
 }
 
 function addChildren(parent, name) {
