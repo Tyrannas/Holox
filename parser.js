@@ -1,5 +1,4 @@
 var cache = {}
-var USE_CACHE = true;
 
 function hash(cursor, symbols) {
     if(Array.isArray(symbols)) {
@@ -30,6 +29,7 @@ function buildGrammar(grammarRules) {
 }
 
 function parse(tokens, symbols, tree, grammar) {
+    cache = {}
     return parseTokens(tokens, 0, symbols, tree, grammar)
 }
 
@@ -48,14 +48,15 @@ function parseTokens(tokens, cursor, symbols, tree, grammar) {
      * 3) on a une liste de symboles -> on relance la récursion sur chacun de ces symboles
      */
 
-    // si il n'y a plus de tokens a lire on termine
-    if(cursor >= tokens.length) return 0
+     // si il n'y a plus de tokens a lire on termine
+    if(cursor >= tokens.length) {
+        return 0
+    }
 
     if(USE_CACHE) {
         let inCache = getFromCache(cursor, symbols)
         if(inCache !== undefined) {
             let node = addChildrenFromCache(tree, inCache)
-            // console.log("score from cache: " + node.score)
             return node.score
         }
     }
@@ -141,7 +142,9 @@ function parseTokens(tokens, cursor, symbols, tree, grammar) {
 }
 
 function saveTree() {
-    all_trees.push(JSON.stringify(simple_chart_config.nodeStructure))
+    if(DEBUG){
+        all_trees.push(JSON.stringify(simple_chart_config.nodeStructure))
+    }
 }
 
 function updateScore(node, score) {

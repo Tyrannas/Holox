@@ -60,53 +60,55 @@
     <script src="utils.js"></script>
 
     <script>
-        var simple_chart_config = {
-            chart: {
-                container: "#tree-simple"
-            },
-            
-            nodeStructure: {
-                text: { name: "Root"},
-                HTMLclass: "blue"
-            }
-        };
+        var simple_chart_config;
         var all_trees = []
         var current_tree = 0
         var playing = false
         var terminals = []
         async function parseInput(){
+            simple_chart_config = {
+                chart: {
+                    container: "#tree-simple"
+                },
+                
+                nodeStructure: {
+                    text: { name: "Root"},
+                    HTMLclass: "blue"
+                }
+            };
             var input = document.getElementById('userInput').value
             var tokens = scan(tokenizer, input)//.map(el => el.type)
-                let t1 = new Date().getTime()
-                parse(tokens, "texte", simple_chart_config.nodeStructure, grammar)
-                console.log("number of operations done: " + all_trees.length)
-                console.log("computed in " +( new Date().getTime() - t1) / 1000 + "s")
-                // removeUselessBranches(simple_chart_config.nodeStructure)
-                last()
-            }
+            let t1 = new Date().getTime()
+            parse(tokens, "texte", simple_chart_config.nodeStructure, grammar)
+            console.log("computed in " +( new Date().getTime() - t1) / 1000 + "s")
+            // removeUselessBranches(simple_chart_config.nodeStructure)
+            last()
+        }
         
-            function drawTree(){
+        function drawTree(){
+            if(DEBUG){
                 simple_chart_config.nodeStructure = JSON.parse(all_trees[current_tree]);
-                if(current_tree == all_trees.length -1) {
-                    removeUselessBranches(simple_chart_config.nodeStructure)
-                }
-                setLeafGreen(simple_chart_config.nodeStructure)
-                new Treant(simple_chart_config)
             }
-            function first(){
-                current_tree = 0;
+            if(current_tree == all_trees.length -1 || !DEBUG) {
+                removeUselessBranches(simple_chart_config.nodeStructure)
+            }
+            setLeafGreen(simple_chart_config.nodeStructure)
+            new Treant(simple_chart_config)
+        }
+        function first(){
+            current_tree = 0;
+            drawTree()
+        }
+        function last(){
+            current_tree = all_trees.length - 1;
+            drawTree()
+        }
+        async function play(){
+            playing = true
+            while(current_tree < all_trees.length && playing){
                 drawTree()
-            }
-            function last(){
-                current_tree = all_trees.length - 1;
-                drawTree()
-            }
-            async function play(){
-                playing = true
-                while(current_tree < all_trees.length && playing){
-                    drawTree()
-                    current_tree++
-                    await sleep(DISPLAY_SPEED)
+                current_tree++
+                await sleep(DISPLAY_SPEED)
             }
         }
         function pause(){

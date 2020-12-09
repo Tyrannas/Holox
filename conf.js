@@ -8,3 +8,7 @@ var LEXEMS = "symbols.ho"
 var DELETE_USELESS = true;
 
 var DISPLAY_SPEED = 15;
+
+var USE_CACHE = false;
+
+var DEBUG = false;
