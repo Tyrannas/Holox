@@ -18,6 +18,9 @@
 .node-name {
     text-align: center;
 }
+.node {
+    /* font-size: 0.1em; */
+}
 </style>
 <html lang="en">
 <head>
@@ -54,10 +57,12 @@
     <!-- javascript -->
     <script src="treant-js-master/vendor/raphael.js"></script>
     <script src="treant-js-master/Treant.js"></script>
-    <script src="parser.js"></script>
+    <!-- <script src="parser.js"></script> -->
     <script src="lexer.js"></script>
     <script src="conf.js"></script>
     <script src="utils.js"></script>
+    <script src="ParserTree.js"></script>
+    <script src="GrammarParser.js"></script>
 
     <script>
         var simple_chart_config;
@@ -66,23 +71,40 @@
         var playing = false
         var terminals = []
         async function parseInput(){
-            simple_chart_config = {
+            // simple_chart_config = {
+            //     chart: {
+            //         container: "#tree-simple"
+            //     },
+                
+            //     nodeStructure: {
+            //         text: { name: "Root"},
+            //         HTMLclass: "blue"
+            //     }
+            // };
+            var input = document.getElementById('userInput').value
+            var tokens = scan(tokenizer, input)//.map(el => el.type)
+            let parser = new GrammarParser(grammar)
+            let t1 = new Date().getTime()
+            // console.log(tokens)
+
+            // parse(tokens, "texte", simple_chart_config.nodeStructure, grammar)
+
+            parser.parse(tokens, "texte")
+
+            console.log("computed in " +( new Date().getTime() - t1) / 1000 + "s")
+            // removeUselessBranches(simple_chart_config.nodeStructure)
+            // last()
+
+            let treant_config = {
                 chart: {
                     container: "#tree-simple"
                 },
                 
-                nodeStructure: {
-                    text: { name: "Root"},
-                    HTMLclass: "blue"
-                }
-            };
-            var input = document.getElementById('userInput').value
-            var tokens = scan(tokenizer, input)//.map(el => el.type)
-            let t1 = new Date().getTime()
-            parse(tokens, "texte", simple_chart_config.nodeStructure, grammar)
-            console.log("computed in " +( new Date().getTime() - t1) / 1000 + "s")
-            // removeUselessBranches(simple_chart_config.nodeStructure)
-            last()
+                nodeStructure: parser.getTree().toTreantTree()
+            }
+            // console.log(parser.getTree())
+            new Treant(treant_config)
+
         }
         
         function drawTree(){
@@ -125,6 +147,18 @@
                 current_tree--
             }
             drawTree()
+        }
+
+        function buildGrammar(grammarRules) {
+            grammar = {}
+            rules = grammarRules.split(';')
+            rules.pop()
+            rules.forEach(r => { 
+                let parsed = r.split(':=')
+                let tokens = parsed[1].split('|').map(tok => tok.trim().split(' '))
+                grammar[parsed[0].trim()] = tokens
+            })
+            return grammar
         }
         (async function () {
             const respGram = await fetch(HOST + "/" + GRAMMAR)

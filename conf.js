@@ -5,7 +5,7 @@ var GRAMMAR = "grammar.ho"
 
 var LEXEMS = "symbols.ho"
 
-var DELETE_USELESS = true;
+var DELETE_USELESS = false;
 
 var DISPLAY_SPEED = 15;
 
