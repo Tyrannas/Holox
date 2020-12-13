@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>SVG.js</title>
+    <script src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js@3.0/dist/svg.min.js"></script>
+</head>
+
+<body>
+    <input type="texte" id="mot" value="assassin"/>
+    <input type="button" value="GO" id="go" onclick="clickHandler()"/>
+</body>
+<script>
+    var draw;
+    SVG.on(document, 'DOMContentLoaded', function () {
+        draw = SVG().addTo('body').size(window.innerWidth, window.innerHeight)
+    })
+    
+    function clickHandler(){
+        drawWord(document.getElementById("mot").value, 50, 50, 300)
+    }
+
+    function drawWord(word, originX, originY, size){
+        const letters = word.split('');
+        let group = draw.group();
+
+        const centerX = originX + size / 2;
+        const centerY = originY + size / 2;
+        const letterHeight = size / 4
+        const letterWidth = letterHeight / 3.08
+
+        let angle = 0;
+        let angleIncrement = 360 / letters.length;
+        
+        let image = group.image('./SVG/mot.svg')
+        image.size(size, size).move(originX, originY)
+        
+        for(let letter of letters){
+            
+            let letterImage = group.image(`./SVG/${letter.toLowerCase()}.svg`)
+            
+            letterImage
+            .size(letterWidth, letterHeight)
+            .move(centerX - letterWidth / 2, originX + size / 30)
+            .rotate(angle, centerX, centerY)
+            
+            angle += angleIncrement;
+        }
+
+        return group
+    }
+</script>
+
+</html>
