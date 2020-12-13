@@ -7,17 +7,21 @@
 </head>
 
 <body>
-    <input type="texte" id="mot" value="assassin"/>
+    <input type="texte" id="mot" value="assassin" onchange="clickHandler()"/>
     <input type="button" value="GO" id="go" onclick="clickHandler()"/>
 </body>
 <script>
     var draw;
     SVG.on(document, 'DOMContentLoaded', function () {
         draw = SVG().addTo('body').size(window.innerWidth, window.innerHeight)
+        drawWord("assassin", 50, 50, 200)
+        drawWord("bonobo", 450, 50, 200)
+        drawWord("éléphant", 450, 450, 200)
+        drawWord("magique", 50, 450, 200)
     })
     
     function clickHandler(){
-        drawWord(document.getElementById("mot").value, 50, 50, 300)
+        drawWord(document.getElementById("mot").value, 200, 200, 300)
     }
 
     function drawWord(word, originX, originY, size){
@@ -41,7 +45,7 @@
             
             letterImage
             .size(letterWidth, letterHeight)
-            .move(centerX - letterWidth / 2, originX + size / 30)
+            .move(centerX - letterWidth / 2, originY + size / 30)
             .rotate(angle, centerX, centerY)
             
             angle += angleIncrement;
