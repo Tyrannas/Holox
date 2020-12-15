@@ -2,7 +2,7 @@ texte      := phrase fin_phrase | phrase fin_phrase texte;
 
 phrase     := expression fin_expression 
            |  expression 
-           |  expression fin_expression phrase ;
+           |  expression fin_expression -phrase ;
 
 -expression := groupe action verbe action groupe 
            |  groupe ;

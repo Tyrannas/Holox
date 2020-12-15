@@ -8,8 +8,8 @@ La solution que tu cherches assidument est le système d'écriture qu'utilisaien
 Toi -> (Chercher + Assidument):3 -> Solution:1,
 Moi -> @3 -> @1,
 @1 -> Etre -> (Système + Ecriture):2,
-(*Egyptiens* + **Anciens**) \> Utiliser \> @2,
-Champolion \> Decrypter \> @2.
+(*Egyptiens* + **Anciens**) \\> Utiliser \\> @2,
+Champolion \\> Decrypter \\> @2.
 ```
 
 // Rajouter n'importe quel type de noeud pour faciliter compréhension ! Genre noeud personne ?

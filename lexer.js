@@ -26,16 +26,18 @@ function scan(tokenizer, inputStream){
     return tokens
 }
 
-function buildTokenizer(lexerRules){
+function buildTokenizer(lexerRules, ASTmode=false){
     // take an input in the form:
     // tokenName := regExp ;
-    tokenizer = {}
+    let res = {}
     lexems = lexerRules.split(';')
     if(lexems[lexems.length - 1] === '') lexems.pop()
     lexems.forEach(l => { 
         let parsed = l.split(':=')
         regex = "^" + parsed[1].trim()
-        tokenizer[parsed[0].trim()] = new RegExp(regex)
+        let key = parsed[0].trim()
+        if(!ASTmode) key = key.replace(/-/g, ''); 
+        res[key] = new RegExp(regex)
     })
-    return tokenizer
+    return res
 }

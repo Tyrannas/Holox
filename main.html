@@ -58,9 +58,11 @@
     <script src="treant-js-master/vendor/raphael.js"></script>
     <script src="treant-js-master/Treant.js"></script>
     <!-- <script src="parser.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js@3.0/dist/svg.min.js"></script>
     <script src="lexer.js"></script>
     <script src="conf.js"></script>
     <script src="utils.js"></script>
+    <script src="display.js"></script>
     <script src="ParserTree.js"></script>
     <script src="GrammarParser.js"></script>
 
@@ -70,30 +72,20 @@
         var current_tree = 0
         var playing = false
         var terminals = []
+        var parser;
+        var tokenizer;
+        var tokenizerAST;
+        var draw;
+        
         async function parseInput(){
-            // simple_chart_config = {
-            //     chart: {
-            //         container: "#tree-simple"
-            //     },
-                
-            //     nodeStructure: {
-            //         text: { name: "Root"},
-            //         HTMLclass: "blue"
-            //     }
-            // };
-            var input = document.getElementById('userInput').value
-            var tokens = scan(tokenizer, input)//.map(el => el.type)
-            let parser = new GrammarParser(grammar)
-            let t1 = new Date().getTime()
-            // console.log(tokens)
 
-            // parse(tokens, "texte", simple_chart_config.nodeStructure, grammar)
+            const input = document.getElementById('userInput').value
+            const tokens = scan(tokenizer, input)
+            const t1 = new Date().getTime()
 
             parser.parse(tokens, "texte")
 
             console.log("computed in " +( new Date().getTime() - t1) / 1000 + "s")
-            // removeUselessBranches(simple_chart_config.nodeStructure)
-            // last()
 
             let treant_config = {
                 chart: {
@@ -102,7 +94,8 @@
                 
                 nodeStructure: parser.getTree().toTreantTree()
             }
-            // console.log(parser.getTree())
+            console.log(parser.getTree())
+            console.log(JSON.stringify(parser.buildAST()))
             new Treant(treant_config)
 
         }
@@ -149,17 +142,13 @@
             drawTree()
         }
 
-        function buildGrammar(grammarRules) {
-            grammar = {}
-            rules = grammarRules.split(';')
-            rules.pop()
-            rules.forEach(r => { 
-                let parsed = r.split(':=')
-                let tokens = parsed[1].split('|').map(tok => tok.trim().split(' '))
-                grammar[parsed[0].trim()] = tokens
-            })
-            return grammar
-        }
+        SVG.on(document, 'DOMContentLoaded', function () {
+            draw = SVG().addTo('body').size(window.innerWidth, window.innerHeight)
+            // drawWord("assassin", 50, 50, 200)
+            // drawWord("bonobo", 450, 50, 200)
+            // drawWord("éléphant", 450, 450, 200)
+            // drawWord("magique", 50, 450, 200)
+        })
         (async function () {
             const respGram = await fetch(HOST + "/" + GRAMMAR)
             const grammarRules = await respGram.text()
@@ -167,10 +156,10 @@
             const respLexems = await fetch(HOST + "/" + LEXEMS)
             const lexerRules = await respLexems.text()
             
-            var tokenizer = buildTokenizer(lexerRules);
-            var grammar = buildGrammar(grammarRules);
-            console.log(grammar)
-            terminals = Object.keys(tokenizer)
+            tokenizer = buildTokenizer(lexerRules);
+            tokenizerAST = buildTokenizer(lexerRules, true);
+
+            parser = new GrammarParser(grammarRules)
         })();
         
         </script>
