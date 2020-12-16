@@ -95,7 +95,7 @@
                 nodeStructure: parser.getTree().toTreantTree()
             }
             console.log(parser.getTree())
-            console.log(JSON.stringify(parser.buildAST()))
+            console.log(parser.buildAST())
             new Treant(treant_config)
 
         }
@@ -142,13 +142,13 @@
             drawTree()
         }
 
-        SVG.on(document, 'DOMContentLoaded', function () {
-            draw = SVG().addTo('body').size(window.innerWidth, window.innerHeight)
-            // drawWord("assassin", 50, 50, 200)
-            // drawWord("bonobo", 450, 50, 200)
-            // drawWord("éléphant", 450, 450, 200)
-            // drawWord("magique", 50, 450, 200)
-        })
+        // SVG.on(document, 'DOMContentLoaded', function () {
+        //     draw = SVG().addTo('body').size(window.innerWidth, window.innerHeight)
+        //     // drawWord("assassin", 50, 50, 200)
+        //     // drawWord("bonobo", 450, 50, 200)
+        //     // drawWord("éléphant", 450, 450, 200)
+        //     // drawWord("magique", 50, 450, 200)
+        // })
         (async function () {
             const respGram = await fetch(HOST + "/" + GRAMMAR)
             const grammarRules = await respGram.text()
