@@ -23,11 +23,12 @@
 }
 </style>
 <html lang="en">
-<head>
-    <meta charset="utf-8"/>
-    <title></title>
-    <!-- stylesheets -->
-    <link rel="stylesheet" href="treant-js-master/Treant.css" type="text/css"/>
+    <head>
+        <meta charset="utf-8"/>
+        <title></title>
+        <!-- stylesheets -->
+        <link rel="stylesheet" href="treant-js-master/Treant.css" type="text/css"/>
+        <script src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js@3.0/dist/svg.min.js" type="text/javascript"></script>
     <style>
         .button{
             padding: 0.7em
@@ -39,10 +40,10 @@
 </head>
 <body>
     <div style="margin: auto;display: block; width: 40%;">
-        <input type="text" id="userInput" style="width: 80%" value="Toto,Lapin."/>
+        <input type="text" id="userInput" style="width: 80%" value="Toto:1 -> Manger -> (Lapin + Sauce), @1 -> Etre -> Content."/>
         <input type=button onclick="parseInput()" value="GO">
     </div>
-    <div style="margin: auto;display: block; width: 40%; margin-top: 1em;">
+    <!-- <div style="margin: auto;display: block; width: 40%; margin-top: 1em;">
         <div style="margin: auto; width: 60%;">
             <input type=button class="button" onclick="first()" value="<<">
             <input type=button class="button" onclick="previous()" value="<">
@@ -51,20 +52,20 @@
             <input type=button class="button" onclick="next()" value=">">
             <input type=button class="button" onclick="last()" value=">>">
         </div>
-    </div>
+    </div> -->
     <p id="input" style="text-align: center;"></p>
     <div id="tree-simple"> </div>
     <!-- javascript -->
     <script src="treant-js-master/vendor/raphael.js"></script>
     <script src="treant-js-master/Treant.js"></script>
     <!-- <script src="parser.js"></script> -->
-    <script src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js@3.0/dist/svg.min.js"></script>
-    <script src="lexer.js"></script>
     <script src="conf.js"></script>
     <script src="utils.js"></script>
-    <script src="display.js"></script>
     <script src="ParserTree.js"></script>
+    <script src="Lexer.js"></script>
     <script src="GrammarParser.js"></script>
+    <script src="Evaluator.js"></script>
+    <script src="Displayer.js"></script>
 
     <script>
         var simple_chart_config;
@@ -74,9 +75,10 @@
         var terminals = []
         var parser;
         var tokenizer;
+        var evaluator; 
         var tokenizerAST;
         var draw;
-        
+        console.log("here")
         async function parseInput(){
 
             const input = document.getElementById('userInput').value
@@ -94,10 +96,11 @@
                 
                 nodeStructure: parser.getTree().toTreantTree()
             }
-            console.log(parser.getTree())
-            console.log(parser.buildAST())
-            new Treant(treant_config)
-
+            const AST = parser.buildAST()
+            // new Treant(treant_config)
+            evaluator = new Evaluator(AST)
+            displayer = new Displayer(draw, evaluator.groups, evaluator.verbs)
+            // console.log(evaluator)
         }
         
         function drawTree(){
@@ -142,13 +145,6 @@
             drawTree()
         }
 
-        // SVG.on(document, 'DOMContentLoaded', function () {
-        //     draw = SVG().addTo('body').size(window.innerWidth, window.innerHeight)
-        //     // drawWord("assassin", 50, 50, 200)
-        //     // drawWord("bonobo", 450, 50, 200)
-        //     // drawWord("éléphant", 450, 450, 200)
-        //     // drawWord("magique", 50, 450, 200)
-        // })
         (async function () {
             const respGram = await fetch(HOST + "/" + GRAMMAR)
             const grammarRules = await respGram.text()
@@ -158,8 +154,10 @@
             
             tokenizer = buildTokenizer(lexerRules);
             tokenizerAST = buildTokenizer(lexerRules, true);
-
+            
             parser = new GrammarParser(grammarRules)
+            draw = SVG().addTo('body').size(window.innerWidth, window.innerHeight)
+            console.log("when")
         })();
         
         </script>

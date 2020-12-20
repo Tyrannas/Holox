@@ -8,7 +8,7 @@ phrase     := expression
 
 groupe_verbal := groupe action groupe action groupe;
 
-groupe      := groupe_mot | groupe_mot id ;
+groupe      := groupe_mot | groupe_mot id | ref;
 
 groupe_mot := noeud_vide |
               noeud_mot |
@@ -19,7 +19,7 @@ groupe_mot := noeud_vide |
 
 -link_mot   := liaison | appartient ;
 
-noeud_mot  := deco_mot mot deco_mot | mot | ref ;
+noeud_mot  := deco_mot mot deco_mot | mot ;
 
 noeud_vide := left_par right_par ;
 
