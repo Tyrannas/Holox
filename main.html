@@ -39,8 +39,8 @@
     </style>
 </head>
 <body>
-    <div style="margin: auto;display: block; width: 40%;">
-        <input type="text" id="userInput" style="width: 80%" value="Toto:1 -> Manger -> (Lapin + Sauce), @1 -> Etre -> Content."/>
+    <div style="margin: auto;display: block; width: 40%;" id="menu">
+        <input type="text" id="userInput" style="width: 80%" value="(Assassin + Acolyte), Ducatore."/>
         <input type=button onclick="parseInput()" value="GO">
     </div>
     <!-- <div style="margin: auto;display: block; width: 40%; margin-top: 1em;">
@@ -78,7 +78,8 @@
         var evaluator; 
         var tokenizerAST;
         var draw;
-        console.log("here")
+        var documentHeight;
+
         async function parseInput(){
 
             const input = document.getElementById('userInput').value
@@ -156,8 +157,8 @@
             tokenizerAST = buildTokenizer(lexerRules, true);
             
             parser = new GrammarParser(grammarRules)
-            draw = SVG().addTo('body').size(window.innerWidth, window.innerHeight)
-            console.log("when")
+            getHeight()
+            draw = SVG().addTo('body').size(document.body.scrollWidth, documentHeight);
         })();
         
         </script>

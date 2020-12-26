@@ -119,7 +119,7 @@ class Evaluator {
 		let rest = children.slice(1);
 		for (let i = 0; i < rest.length; i += 2) {
 			// handle the node + the link between the nodes
-			this.handleWordNode(rest[i], idContainer, rest[i + 1]);
+			this.handleWordNode(rest[i + 1], idContainer, rest[i]);
 		}
 	}
 

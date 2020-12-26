@@ -8,14 +8,14 @@ class Displayer {
 
 	drawGroups() {
 		const groups = Object.values(this.groups);
-		const groupWidth = window.innerWidth / groups.length * 2 - 10;
-		const groupHeight = window.innerHeight / 2 - 10;
+		const groupWidth = document.body.scrollWidth / groups.length * 2;
+		const groupHeight = documentHeight / 2;
 		let startX = 0;
 		let startY = 0;
 		for (let i = 0; i < groups.length; i++) {
 			this.drawGroup(groups[i], startX, startY, Math.min(groupHeight, groupWidth));
 			startX += groupWidth;
-			if (Math.round(startX) >= window.innerWidth) {
+			if (Math.round(startX) >= document.body.scrollWidth) {
 				startY += groupHeight;
 				startX = 0;
 			}
@@ -23,15 +23,15 @@ class Displayer {
 	}
 
 	drawGroup(group, originX, originY, size) {
-		let startX = originX;
-		let startY = originY;
+		console.log(originX);
 		let wordSize = size / group.length;
 		for (let word of group) {
-			this.drawWord(word, startX, startY, wordSize);
-			startX += wordSize;
+			this.drawWord(word, originX, originY, wordSize);
+			originX += wordSize;
 		}
 	}
 	drawWord(word, originX, originY, size) {
+		console.log(originX, originY);
 		const letters = word.word.split('');
 		let group = this.draw.group();
 
