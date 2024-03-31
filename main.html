@@ -29,6 +29,7 @@
         <!-- stylesheets -->
         <link rel="stylesheet" href="treant-js-master/Treant.css" type="text/css"/>
         <script src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js@3.0/dist/svg.min.js" type="text/javascript"></script>
+        <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         .button{
             padding: 0.7em
@@ -40,7 +41,7 @@
 </head>
 <body>
     <div style="margin: auto;display: block; width: 40%;" id="menu">
-        <input type="text" id="userInput" style="width: 80%" value="(Assassin + Acolyte), Ducatore."/>
+        <input type="text" id="userInput" style="width: 80%" value="(Assassin + Acolyte) -> etre -> Ducatore:1, @1 -> voir -> fille:2, @2 -> aime -> lapin."/>
         <input type=button onclick="parseInput()" value="GO">
     </div>
     <!-- <div style="margin: auto;display: block; width: 40%; margin-top: 1em;">
@@ -81,7 +82,7 @@
         var documentHeight;
 
         async function parseInput(){
-
+            // draw.empty()
             const input = document.getElementById('userInput').value
             const tokens = scan(tokenizer, input)
             const t1 = new Date().getTime()
@@ -159,6 +160,7 @@
             parser = new GrammarParser(grammarRules)
             getHeight()
             draw = SVG().addTo('body').size(document.body.scrollWidth, documentHeight);
+            parseInput()
         })();
         
         </script>

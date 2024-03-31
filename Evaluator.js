@@ -160,7 +160,7 @@ class Evaluator {
 		for (let idGroup of this.groupsToDelete) {
 			for (let [ key, verb ] of Object.entries(this.verbs)) {
 				if (verb.edge === idGroup) {
-					this.verbs[key].edge = Object.create(this.groups[idGroup]);
+					this.verbs[key].edge = {...this.groups[idGroup]};
 					delete this.groups[idGroup];
 				}
 			}

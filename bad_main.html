@@ -1,0 +1,187 @@
+<!doctype html>
+<style>
+</style>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <!-- stylesheets -->
+    <script src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js@3.0/dist/svg.min.js" type="text/javascript"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        .button {
+            padding: 0.7em
+        }
+
+        .button:hover {
+            cursor: pointer
+        }
+    </style>
+</head>
+
+<body>
+    <div style="margin: auto;display: block; width: 40%;" id="menu">
+        <input type="text" id="userInput" style="width: 80%" value="(Assassin + Acolyte), Ducatore." />
+        <input type=button onclick="parseInput()" value="GO">
+    </div>
+    <!-- <div style="margin: auto;display: block; width: 40%; margin-top: 1em;">
+        <div style="margin: auto; width: 60%;">
+            <input type=button class="button" onclick="first()" value="<<">
+            <input type=button class="button" onclick="previous()" value="<">
+            <input type=button class="button" onclick="play()" value="Play">
+            <input type=button class="button" onclick="pause()" value="Pause">
+            <input type=button class="button" onclick="next()" value=">">
+            <input type=button class="button" onclick="last()" value=">>">
+        </div>
+    </div> -->
+    <p id="input" style="text-align: center;"></p>
+    <div id="graph-container"> </div>
+    <!-- javascript -->
+    <script src="treant-js-master/vendor/raphael.js"></script>
+    <script src="treant-js-master/Treant.js"></script>
+    <!-- <script src="parser.js"></script> -->
+    <script src="conf.js"></script>
+    <script src="utils.js"></script>
+    <script src="ParserTree.js"></script>
+    <script src="Lexer.js"></script>
+    <script src="GrammarParser.js"></script>
+    <script src="Evaluator.js"></script>
+    <script src="Displayer.js"></script>
+
+    <script>
+        var simple_chart_config;
+        var all_trees = []
+        var current_tree = 0
+        var playing = false
+        var terminals = []
+        var parser;
+        var tokenizer;
+        var evaluator;
+        var tokenizerAST;
+        var draw;
+        var documentHeight;
+
+        async function parseInput() {
+
+            const input = document.getElementById('userInput').value
+            const tokens = scan(tokenizer, input)
+            const t1 = new Date().getTime()
+
+            parser.parse(tokens, "texte")
+
+            console.log("computed in " + (new Date().getTime() - t1) / 1000 + "s")
+
+            const AST = parser.buildAST()
+            // new Treant(treant_config)
+            evaluator = new Evaluator(AST)
+            toGraph(evaluator.groups)
+            // displayer = new Displayer(draw, evaluator.groups, evaluator.verbs)
+            // console.log(evaluator)
+        }
+
+        (async function () {
+            const respGram = await fetch(HOST + "/" + GRAMMAR)
+            const grammarRules = await respGram.text()
+
+            const respLexems = await fetch(HOST + "/" + LEXEMS)
+            const lexerRules = await respLexems.text()
+
+            tokenizer = buildTokenizer(lexerRules);
+            tokenizerAST = buildTokenizer(lexerRules, true);
+
+            parser = new GrammarParser(grammarRules)
+            getHeight()
+            draw = SVG().addTo('body').size(document.body.scrollWidth, documentHeight);
+            parseInput()
+        })();
+
+        function toGraph(words) {
+            const groupsData = Object.values(words);
+            const linksData = [];
+            const nodeSize = 350
+
+            // Créer le conteneur SVG pour le graphe
+            const svg = d3.select("#graph-container")
+                .append("svg")
+                .attr("width", 2000)
+                .attr("height", 1200);
+
+            // Fonction pour dessiner les mots avec vos SVG
+            function drawWord(word, originX, originY, size) {
+                const letters = word.word.split('');
+
+                // Calculer le centre du mot
+                const centerX = size / 2;
+                const centerY = size / 2;
+
+                const letterHeight = size / 4;
+                const letterWidth = letterHeight / 3.08;
+
+                // Créer un groupe SVG pour le mot
+                let group = svg.append("g")
+                    .attr("transform", `translate(${originX}, ${originY})`);
+
+                // Créer une image pour le mot
+                let wordImage = group.append("image")
+                    .attr("xlink:href", "./SVG/mot.svg")
+                    .attr("width", size)
+                    .attr("height", size);
+
+                // Ajouter chaque lettre du mot
+                let angle = -90; // Décaler l'angle de départ pour que les lettres soient dans la bonne orientation
+                const angleIncrement = 360 / letters.length;
+                for (let letter of letters) {
+                    // Créer une transformation pour placer la lettre à la bonne position absolue par rapport au coin supérieur gauche du groupe
+                    // Appliquer la rotation et la translation à chaque lettre
+                    let letterImage = group.append("image")
+                        .attr("xlink:href", `./SVG/${letter.toLowerCase()}.svg`)
+                        .attr("width", letterWidth)
+                        .attr("height", letterHeight)
+                        .attr("transform", `translate(${centerX - size / 2 + size / 30}, ${centerY - size / 2}) rotate(${angle}, ${centerX - 30}, ${centerY - 35})`);
+
+                    // Mettre à jour l'angle pour la prochaine lettre
+                    angle += angleIncrement;
+                }
+
+                // Retourner le groupe contenant le mot et ses lettres
+                return group;
+            }
+
+
+
+
+
+            // Dessiner les mots dans les groupes
+            groupsData.forEach((group, i) => {
+                const startX = 100 + i * (nodeSize * 3);
+                const startY = 150;
+                group.forEach((word, j) => {
+                    drawWord(word, startX + j * nodeSize, startY, nodeSize);
+                });
+            });
+
+            // Dessiner les connexions
+            // const nodes = groupsData.map((group, i) => ({ id: `group${i}`, group }));
+            // const simulation = d3.forceSimulation(nodes)
+            //     .force("link", d3.forceLink(linksData).id(d => d.id))
+            //     .force("charge", d3.forceManyBody().strength(-100))
+            //     .force("center", d3.forceCenter(300, 200));
+
+            // const links = svg.selectAll(".link")
+            //     .data(linksData)
+            //     .enter().append("line")
+            //     .attr("stroke", "gray")
+            //     .attr("stroke-width", 2);
+
+            // simulation.on("tick", () => {
+            //     links.attr("x1", d => d.source.x)
+            //         .attr("y1", d => d.source.y)
+            //         .attr("x2", d => d.target.x)
+            //         .attr("y2", d => d.target.y);
+            // });
+        }
+    </script>
+</body>
+
+</html>
