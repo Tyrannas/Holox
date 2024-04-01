@@ -46,7 +46,7 @@ class Evaluator {
 	handleVerbGroup(verbGroupNode, idContainer) {
 		// in a verb group node we need to create the edges between the groups
 		// a verb group is in the form: group action group action group
-		let verb = { nodes: [] };
+		let verb = {nodes: []};
 		let children = verbGroupNode.children;
 
 		const idGroup1 = { ...idContainer, group: 0 };
@@ -74,9 +74,10 @@ class Evaluator {
 		// either a word group, a group word + id or a ref to a group
 		if (groupNode.children.length === 2) {
 			// this means we have an id that will be used to identify the associated groupe_mot in the phrase
-			this.refs[idContainer.phrase] = {
-				[groupNode.children[1].data.replace(/:/g, '')]: id
-			};
+			if(!this.refs[idContainer.phrase]){
+				this.refs[idContainer.phrase] = {}
+			}
+			this.refs[idContainer.phrase][groupNode.children[1].data.replace(/:/g, '')] = id
 		} else if (child.type === 'ref') {
 			// a ref can only be used in a verbal group
 			// so if me weet a ref we should check the ref table,

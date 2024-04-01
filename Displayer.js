@@ -1,16 +1,24 @@
 class Displayer {
 	constructor(draw, groups, verbs) {
 		this.groups = groups;
-		this.verbs = verbs;
+		this.verbs = this.formatVerbs(verbs);
 		this.draw = draw;
 		let groupWidth = document.body.scrollWidth / Object.values(groups).length * 2;
 		let groupHeight = documentHeight / 3;
-		this.groupSize = Math.min(groupHeight, groupWidth)
-		this.backgroundColor = 'white'; // Violet
-        this.lineColor = 'black'; // Jaune
+		this.groupSize = Math.min(groupHeight, groupWidth) / 2
+		this.backgroundColor = '#330c61'; // Violet
+		this.lineColor = 'white'; // Jaune
 		this.draw.rect(this.draw.node.clientWidth, this.draw.node.clientHeight).fill(this.backgroundColor);
 		this.drawGroups();
 		this.initializeSimulation();
+	}
+
+	formatVerbs(verbs) {
+		const res = []
+		for (let [key, verb] of Object.entries(verbs)) {
+			res.push({ source: verb.nodes[0].id, target: verb.nodes[1].id, edge: verb.edge, id: key })
+		}
+		return res
 	}
 
 	drawGroups() {
@@ -23,11 +31,17 @@ class Displayer {
 	}
 
 	initializeSimulation() {
+		const [forceCenterX, forceCenterY] = [this.draw.node.clientWidth / 2 - this.groupSize / 2, this.draw.node.clientHeight / 2 - this.groupSize / 2]
+		const forceGroups = Object.entries(this.groups).map(([k, v]) => ({ id: k, ...v, radius: this.groupSize / 2 }))
 		// Créer une simulation D3
-		this.simulation = d3.forceSimulation(Object.values(this.groups))
-			.force("link", d3.forceLink(this.verbs).id(d => d.id).distance(0))
-			.force("charge", d3.forceManyBody().strength(-this.groupSize * 4))
-			.force("center", d3.forceCenter(this.draw.node.clientWidth / 2 - this.groupSize / 2, this.draw.node.clientHeight / 2 - this.groupSize / 2)) // Centrer la simulation dans le SVG
+		this.simulation = d3.forceSimulation(forceGroups)
+			.force("link", d3.forceLink(this.verbs).id(d => d.id)
+				.distance(d => this.groupSize * 2 + this.groupSize / 4)) // Ajustez la distance des liens en fonction de la taille des nœuds
+			// .force("charge", d3.forceManyBody().strength(0.005).distanceMax(d => d.radius / 2)) // Utilisez le rayon des nœuds pour définir la distance maximale de répulsion
+			.force("collision", d3.forceCollide().radius(d => d.radius * 2).strength(2)) // Utilisez le rayon des nœuds pour détecter les collisions
+			.force("center", d3.forceCenter(forceCenterX, forceCenterY).strength(0.05)) // Centrer la simulation dans le SVG
+
+		// this.simulation.tick(200000)
 
 		// Mettre à jour la position des groupes SVG à chaque itération de la simulation
 		this.simulation.on("tick", () => {
@@ -35,12 +49,27 @@ class Displayer {
 			this.updateGroupsPositions();
 		});
 
+		this.simulation.tick(1000);
+
 		this.simulation.on("end", () => {
 			this.animateNodeOscillation();
 		});
 	}
 
+	calculateCircleBorderPoint(cx, cy, r, px, py) {
+		const dx = px - cx;
+		const dy = py - cy;
+		const theta = Math.atan2(dy, dx);
+		return {
+			x: cx + r * Math.cos(theta),
+			y: cy + r * Math.sin(theta)
+		};
+	}
+
 	animateNodeOscillation() {
+		/**
+		 * Faire bouger les noeuds une fois la simulation de force finie
+		 */
 		// Définir les paramètres d'oscillation
 		const randomInRange = (min, max, threshold) => {
 			let res = 0
@@ -52,7 +81,7 @@ class Displayer {
 		const frequencies = Object.values(this.groups).map(_ => randomInRange(0.0003, 0.0008, 0.0003))
 		const amplitudes = Object.values(this.groups).map(_ => randomInRange(-0.30, 0.30, 0.15))
 		const rotates = Object.values(this.groups).map(_ => randomInRange(-0.0025, 0.0025, 0.001))
-		console.log(frequencies)
+		const startTime = Date.now()
 		// Fonction d'animation
 		const animate = () => {
 			// Appliquer l'oscillation à chaque nœud
@@ -63,7 +92,8 @@ class Displayer {
 				group.x += xOffset;
 				group.y += yOffset;
 				this.drawLinks()
-				const rotationAngle = rotates[index] * (Date.now() % 360); // Ajustez la vitesse de rotation selon vos préférences
+				const rotationSpeed = rotates[index]
+				const rotationAngle = rotationSpeed * (((Date.now() - startTime) / 100) % 360); // Ajustez la vitesse de rotation selon vos préférences
 				group.svg.rotate(rotationAngle);
 			}
 
@@ -76,6 +106,9 @@ class Displayer {
 	}
 
 	drawLinks() {
+		/**
+		 * Dessiner tous les verbes
+		 */
 		// Sélectionner le groupe SVG pour les liens s'il existe, sinon le créer
 		let linksGroup = this.draw.findOne('.links');
 		if (!linksGroup) {
@@ -85,31 +118,29 @@ class Displayer {
 		}
 
 		// Dessiner les liens entre les nœuds
-		for (const verb in this.verbs) {
-			const nodes = this.verbs[verb].nodes;
-			const groupId1 = nodes[0].id;
-			const groupId2 = nodes[1].id;
-			const group1 = this.groups[groupId1];
-			const group2 = this.groups[groupId2];
+		for (const verb of this.verbs) {
+			const group1 = this.groups[verb.source.id];
+			const group2 = this.groups[verb.target.id];
 			// TODO: handle complex verbal groups
-			const verbWord = this.verbs[verb].edge[0]
+			const verbWord = verb.edge[0]
 			if (group1 && group2) {
 				this.drawConnection(group1, group2, linksGroup, verbWord.word);
 			}
 		}
 	}
 
-
-
 	drawConnection(group1, group2, parentGroup, verb) {
-		const x1 = group1.x + this.groupSize / 2;
-		const y1 = group1.y + this.groupSize / 2;
-		const x2 = group2.x + this.groupSize / 2;
-		const y2 = group2.y + this.groupSize / 2;
+		/**
+		 * Dessiner un verbe entre deux groupes
+		 */
+		const coord1 = this.calculateCircleBorderPoint(group1.x + this.groupSize / 2, group1.y + this.groupSize / 2, this.groupSize / 2, group2.x + this.groupSize / 2, group2.y + this.groupSize / 2);
+		const coord2 = this.calculateCircleBorderPoint(group2.x + this.groupSize / 2, group2.y + this.groupSize / 2, this.groupSize / 2, group1.x + this.groupSize / 2, group1.y + this.groupSize / 2);
+		const [x1, x2, y1, y2] = [coord1.x, coord2.x, coord1.y, coord2.y]
 
 		const lineLength = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-		const deltaY = 40; // Espacement vertical entre les lignes supplémentaires
-		const deltaYBorder = 50;
+		const deltaY = this.groupSize / 8; // Espacement vertical entre les lignes supplémentaires
+		const deltaYBorder = this.groupSize / 7;
+		const lineWidth = deltaY / 14;
 		// Calculer l'angle de la ligne principale
 		const angle = Math.atan2(y2 - y1, x2 - x1);
 
@@ -121,34 +152,29 @@ class Displayer {
 
 		// Dessiner les lignes parallèles
 		const line0 = this.draw.line(x1 - offsetXBorder, y1 + offsetYBorder, x2 - offsetXBorder, y2 + offsetYBorder);
-		line0.stroke({ color: this.lineColor, width: 4 });
+		line0.stroke({ color: this.lineColor, width: lineWidth }).addClass('myFilter');
 		const line1 = this.draw.line(x1 - offsetX, y1 + offsetY, x2 - offsetX, y2 + offsetY);
-		line1.stroke({ color: this.lineColor, width: 4 });
+		line1.stroke({ color: this.lineColor, width: lineWidth }).addClass('myFilter');
 		const line2 = this.draw.line(x1, y1, x2, y2);
-		line2.stroke({ color: this.lineColor, width: 2 });
+		line2.stroke({ color: this.lineColor, width: lineWidth / 2 }).addClass('myFilter');
 		const line3 = this.draw.line(x1 + offsetX, y1 - offsetY, x2 + offsetX, y2 - offsetY);
-		line3.stroke({ color: this.lineColor, width: 4 });
+		line3.stroke({ color: this.lineColor, width: lineWidth }).addClass('myFilter');
 		const line4 = this.draw.line(x1 + offsetXBorder, y1 - offsetYBorder, x2 + offsetXBorder, y2 - offsetYBorder);
-		line4.stroke({ color: this.lineColor, width: 4 });
+		line4.stroke({ color: this.lineColor, width: lineWidth }).addClass('myFilter');
 
-		const startX = x1 + (x2 - x1) * (this.groupSize / 1.5) / lineLength;
-		const endX = x1 + (x2 - x1) * (lineLength - this.groupSize / 1.5) / lineLength;
-		const startY = y1 + (y2 - y1) * (this.groupSize / 1.5) / lineLength;
-		const endY = y1 + (y2 - y1) * (lineLength - this.groupSize / 1.5) / lineLength;
+		const offset = this.groupSize / 12
+		const totalDistance = (Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))) - offset;
+		const letterSpacing = totalDistance / (verb.length)
 
-		const totalDistance = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
-		const letterSpacing = totalDistance / (verb.length - 1)
-		
-		let currentX = startX; // Début de la partie visible de la ligne
-		let currentY = startY; // Début de la partie visible de la ligne
+		let currentX = x1 + Math.cos(angle) * letterSpacing / 1.5;
+		let currentY = y1 + Math.sin(angle) * letterSpacing / 1.5;
 		for (let i = 0; i < verb.length; i++) {
 			const letter = verb.charAt(i);
-			const letterImage = this.draw.image(`./SVG/${letter.toLowerCase()}.svg`);
-			letterImage.fill(this.lineColor);
+			const letterImage = this.draw.image(`./SVG/${letter.toLowerCase()}_white.svg`);
 			const letterSize = deltaY * 2; // Taille de la lettre
 
 			letterImage.size(letterSize, letterSize).move(currentX - letterSize / 2, currentY - letterSize / 2);
-			letterImage.rotate((angle * 180) / Math.PI, currentX, currentY); // Rotation en degrés
+			letterImage.rotate((angle * 180) / Math.PI, currentX, currentY).addClass('myFilter'); // Rotation en degrés
 
 			parentGroup.add(letterImage);
 
@@ -162,23 +188,34 @@ class Displayer {
 		parentGroup.add(line3);
 		parentGroup.add(line0);
 		parentGroup.add(line4);
+	}
 
-		parentGroup.add(group1.svg);
-		parentGroup.add(group2.svg);
+	calculateCircleBorderPoint(cx, cy, r, px, py) {
+		const dx = px - cx;
+		const dy = py - cy;
+		const theta = Math.atan2(dy, dx);
+		return {
+			x: cx + r * Math.cos(theta),
+			y: cy + r * Math.sin(theta)
+		};
 	}
 
 	updateGroupsPositions() {
+		/** Sert à modifier la position des groupes pendant la simulation de force, x et y sont set par l'algo d3 
+		et ensuite on doit modifier le svg en fonction **/
 		const svgWidth = this.draw.node.clientWidth;
 		const svgHeight = this.draw.node.clientHeight;
-		// Mettre à jour la position des groupes SVG à chaque itération de la simulation
-		for (const groupId in this.groups) {
-			const group = this.groups[groupId];
-			group.x = Math.max(0, Math.min(svgWidth - this.groupSize, group.x)); // Limiter la position x dans la zone visible
-			group.y = Math.max(0, Math.min(svgHeight - this.groupSize, group.y)); // Limiter la position y dans la zone visible
-			group.svg.attr("transform", `translate(${group.x}, ${group.y})`);
-		}
-	}
 
+		this.simulation.nodes().forEach(node => {
+			const group = this.groups[node.id];
+			if (group) {
+				group.x = Math.max(0, Math.min(svgWidth - this.groupSize, node.x)); // Limiter la position x dans la zone visible
+				group.y = Math.max(0, Math.min(svgHeight - this.groupSize, node.y)); // Limiter la position y dans la zone visible
+				group.svg.attr("transform", `translate(${group.x}, ${group.y})`);
+				// Mettez à jour l'affichage des groupes ici si nécessaire
+			}
+		});
+	}
 
 	drawGroup(group, originX, originY, size) {
 		let wordSize = size / group.length;
@@ -193,6 +230,7 @@ class Displayer {
 		}
 		return svgGroup
 	}
+
 	drawWord(word, parentGroup, originX, originY, size) {
 		const letters = word.word.split('');
 		let wordGroup = this.draw.group();
@@ -206,37 +244,21 @@ class Displayer {
 		let angle = 0;
 		let angleIncrement = 360 / letters.length;
 
-		let image = wordGroup.image('./SVG/mot.svg');
-		image.fill(this.lineColor);
-		image.size(size, size).move(originX, originY);
+
+		let image = wordGroup.image('./SVG/mot_vide_blanc.svg');
+		image.size(size, size).move(originX, originY).addClass("myFilter");
 
 		for (let letter of letters) {
-			let letterImage = wordGroup.image(`./SVG/${letter.toLowerCase()}.svg`);
-			letterImage.fill(this.lineColor);
+			let letterImage = wordGroup.image(`./SVG/${letter.toLowerCase()}_white.svg`);
 
 			letterImage
 				.size(letterWidth, letterHeight)
 				.move(centerX - letterWidth / 2, originY + size / 30)
-				.rotate(angle, centerX, centerY);
+				.rotate(angle, centerX, centerY).addClass('myFilter');
 
 			angle += angleIncrement;
 		}
 
 		return wordGroup;
 	}
-
-	// drawConnection(group1, group2) {
-	// 	const bbox1 = group1.bbox(); // Récupérer la boîte englobante du premier groupe
-	// 	const bbox2 = group2.bbox(); // Récupérer la boîte englobante du deuxième groupe
-
-	// 	// Calculer les coordonnées du centre des deux groupes
-	// 	const centerX1 = bbox1.cx;
-	// 	const centerY1 = bbox1.cy;
-	// 	const centerX2 = bbox2.cx;
-	// 	const centerY2 = bbox2.cy;
-
-	// 	// Dessiner une ligne entre les centres des deux groupes
-	// 	const line = this.draw.line(centerX1, centerY1, centerX2, centerY2);
-	// 	line.stroke({ color: 'black', width: 2 }); // Style de la ligne (couleur, épaisseur)
-	// }
 }

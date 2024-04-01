@@ -37,11 +37,19 @@
         .button:hover{
             cursor: pointer
         }
+        .myFilter {
+            filter: drop-shadow(0px 0px 15px #f1f5b2);
+        }
     </style>
 </head>
 <body>
     <div style="margin: auto;display: block; width: 40%;" id="menu">
-        <input type="text" id="userInput" style="width: 80%" value="(Assassin + Acolyte) -> etre -> Ducatore:1, @1 -> voir -> fille:2, @2 -> aime -> lapin."/>
+        <input type="text" id="userInput" style="width: 80%" 
+        value="(Assassin + Acolyte) -> etre -> Ducatore:1,
+        @1 -> voir -> fille:2,
+        @2 -> aime -> lapin,
+        @1 -> sentir -> humain,
+        @2 -> voudrient -> (jambon + jambon)."/>
         <input type=button onclick="parseInput()" value="GO">
     </div>
     <!-- <div style="margin: auto;display: block; width: 40%; margin-top: 1em;">
@@ -55,7 +63,7 @@
         </div>
     </div> -->
     <p id="input" style="text-align: center;"></p>
-    <div id="tree-simple"> </div>
+    <div id="tree-simple" class="myFilter"> </div>
     <!-- javascript -->
     <script src="treant-js-master/vendor/raphael.js"></script>
     <script src="treant-js-master/Treant.js"></script>
